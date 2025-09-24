@@ -62,16 +62,28 @@ class MainActivity : AppCompatActivity() {
             ) {
                 if (response.isSuccessful) {
                     val image = response.body()
-                    val firstImage = image?.firstOrNull()?.imageUrl.orEmpty()
+                    val firstImage = image?.firstOrNull()
 
-                    if (firstImage.isNotBlank()) {
-                        imageLoader.loadImage(firstImage, imageResultView)
+                    // ambil URL gambar
+                    val imageUrl = firstImage?.imageUrl.orEmpty()
+
+                    // ambil nama breed, kalau kosong → "Unknown"
+                    val breedName = if (!firstImage?.breeds.isNullOrEmpty()) {
+                        firstImage?.breeds?.firstOrNull()?.name ?: "Unknown"
+                    } else {
+                        "Unknown"
+                    }
+
+                    // load gambar kalau ada
+                    if (imageUrl.isNotBlank()) {
+                        imageLoader.loadImage(imageUrl, imageResultView)
                     } else {
                         Log.d(MAIN_ACTIVITY, "Missing image URL")
                     }
 
+                    // tampilkan nama breed (bukan URL lagi)
                     apiResponseView.text =
-                        getString(R.string.image_placeholder, firstImage)
+                        getString(R.string.image_placeholder, breedName)
                 } else {
                     Log.e(
                         MAIN_ACTIVITY,
@@ -81,4 +93,5 @@ class MainActivity : AppCompatActivity() {
             }
         })
     }
+
 }
