@@ -2,6 +2,7 @@ package com.example.lab_week_05
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.lab_week_05.model.ImageData
@@ -11,7 +12,20 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var apiResponseView: TextView
+    // View untuk teks
+    private val apiResponseView: TextView by lazy {
+        findViewById(R.id.api_response)
+    }
+
+    // View untuk gambar
+    private val imageResultView: ImageView by lazy {
+        findViewById(R.id.image_result)
+    }
+
+    // Loader gambar (pakai Glide)
+    private val imageLoader: ImageLoader by lazy {
+        GlideLoader(this)  // pastikan kamu bikin class GlideLoader
+    }
 
     companion object {
         const val MAIN_ACTIVITY = "MainActivity"
@@ -32,8 +46,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        apiResponseView = findViewById(R.id.apiResponseView)
-
         getCatImageResponse()
     }
 
@@ -50,7 +62,14 @@ class MainActivity : AppCompatActivity() {
             ) {
                 if (response.isSuccessful) {
                     val image = response.body()
-                    val firstImage = image?.firstOrNull()?.imageUrl ?: "No URL"
+                    val firstImage = image?.firstOrNull()?.imageUrl.orEmpty()
+
+                    if (firstImage.isNotBlank()) {
+                        imageLoader.loadImage(firstImage, imageResultView)
+                    } else {
+                        Log.d(MAIN_ACTIVITY, "Missing image URL")
+                    }
+
                     apiResponseView.text =
                         getString(R.string.image_placeholder, firstImage)
                 } else {
